@@ -1,7 +1,7 @@
--- ETAPA 2 — SISTEMA SAEPSAÚDE
--- Script compatível com a ferramenta Query Tool do pgAdmin.
--- Execute este arquivo conectado ao banco de dados criado para o projeto.
--- Não contém comandos exclusivos do PSQL, como \copy ou \connect.
+-- SISTEMA SAEPSAÚDE — ESTRUTURA E IMPORTAÇÃO DOS CSVs
+-- Execução recomendada: psql -d nome_do_banco -f Sistema_SAEPSaude_importacao.sql
+-- Os arquivos usuarios.csv e Arquivoatividades.csv devem estar no diretório atual do psql.
+-- Para outro diretório, altere os caminhos nas duas instruções \copy.
 
 BEGIN;
 
@@ -15,7 +15,8 @@ CREATE TABLE usuarios (
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL DEFAULT 'senha_temporaria_alterar',
-    tipo_usuario VARCHAR(20) NOT NULL CHECK (tipo_usuario IN ('funcionario', 'cliente')),
+    tipo_usuario VARCHAR(20) NOT NULL
+        CHECK (tipo_usuario IN ('funcionario', 'cliente')),
     data_cadastro TIMESTAMP NOT NULL
 );
 
@@ -25,10 +26,13 @@ CREATE TABLE atividades (
     tipo VARCHAR(100) NOT NULL,
     descricao TEXT,
     data_atividade DATE NOT NULL,
-    duracao INTEGER CHECK (duracao >= 0),
-    distancia DECIMAL(10,2) CHECK (distancia >= 0),
-    CONSTRAINT fk_atividades_usuario FOREIGN KEY (id_usuario)
-        REFERENCES usuarios (id_usuario) ON UPDATE CASCADE ON DELETE RESTRICT
+    duracao INTEGER NOT NULL CHECK (duracao >= 0),
+    distancia NUMERIC(10, 2) NOT NULL CHECK (distancia >= 0),
+    CONSTRAINT fk_atividades_usuario
+        FOREIGN KEY (id_usuario)
+        REFERENCES usuarios (id_usuario)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
 );
 
 CREATE TABLE curtidas (
@@ -55,97 +59,83 @@ CREATE TABLE comentarios (
         REFERENCES atividades (id_atividade) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
--- Importação de usuarios.csv. Como o CSV não possui coluna senha,
--- é aplicada a senha temporária definida no DEFAULT; altere depois no sistema.
-INSERT INTO usuarios (id_usuario, nome, email, tipo_usuario, data_cadastro) VALUES
-    (1, 'Carlos Eduardo Silva', 'carlos.silva@saepsaude.com.br', 'funcionario', '2026-01-10'::timestamp),
-    (2, 'Mariana Oliveira Santos', 'mariana.oliveira@saepsaude.com.br', 'funcionario', '2026-01-12'::timestamp),
-    (3, 'Roberto Souza Lima', 'roberto.souza@saepsaude.com.br', 'funcionario', '2026-01-15'::timestamp),
-    (4, 'Fernanda Costa Pereira', 'fernanda.costa@saepsaude.com.br', 'funcionario', '2026-01-20'::timestamp),
-    (5, 'Lucas Mendes Rocha', 'lucas.mendes@saepsaude.com.br', 'funcionario', '2026-01-22'::timestamp),
-    (6, 'Camila Rodrigues Alves', 'camila.rodrigues@gmail.com', 'cliente', '2026-02-01'::timestamp),
-    (7, 'Gabriel Martins Barbosa', 'gabriel.martins@outlook.com', 'cliente', '2026-02-02'::timestamp),
-    (8, 'Beatriz Almeida Carvalho', 'beatriz.almeida@yahoo.com.br', 'cliente', '2026-02-03'::timestamp),
-    (9, 'Thiago Ferreira Ramos', 'thiago.ramos@gmail.com', 'cliente', '2026-02-05'::timestamp),
-    (10, 'Juliana Ribeiro Castro', 'juliana.castro@hotmail.com', 'cliente', '2026-02-06'::timestamp),
-    (11, 'Rafael Gomes Araujo', 'rafael.gomes@gmail.com', 'cliente', '2026-02-07'::timestamp),
-    (12, 'Patricia Cardoso Dias', 'patricia.dias@outlook.com', 'cliente', '2026-02-08'::timestamp),
-    (13, 'Rodrigo Fernandes Melo', 'rodrigo.melo@gmail.com', 'cliente', '2026-02-10'::timestamp),
-    (14, 'Aline Correia Azevedo', 'aline.azevedo@yahoo.com.br', 'cliente', '2026-02-11'::timestamp),
-    (15, 'Bruno Nunes Marques', 'bruno.marques@gmail.com', 'cliente', '2026-02-12'::timestamp),
-    (16, 'Vanessa Teixeira Cavalcanti', 'vanessa.teixeira@outlook.com', 'cliente', '2026-02-14'::timestamp),
-    (17, 'Diego Monteiro Barros', 'diego.barros@gmail.com', 'cliente', '2026-02-15'::timestamp),
-    (18, 'Amanda Moreira Guimaraes', 'amanda.guimaraes@hotmail.com', 'cliente', '2026-02-16'::timestamp),
-    (19, 'Leonardo Pinto Cunha', 'leonardo.cunha@gmail.com', 'cliente', '2026-02-18'::timestamp),
-    (20, 'Letricia Moura Freitas', 'leticia.freitas@outlook.com', 'cliente', '2026-02-20'::timestamp)
-ON CONFLICT (id_usuario) DO UPDATE SET
-    nome = EXCLUDED.nome, email = EXCLUDED.email, tipo_usuario = EXCLUDED.tipo_usuario, data_cadastro = EXCLUDED.data_cadastro;
+-- Tabelas temporárias com o formato original dos arquivos.
+CREATE TEMP TABLE import_usuarios (
+    id INTEGER,
+    nome VARCHAR(100),
+    email VARCHAR(150),
+    tipo_usuario VARCHAR(20),
+    data_cadastro DATE
+) ON COMMIT DROP;
 
--- Importação de Arquivoatividades.csv com mapeamento para os nomes da modelagem da Etapa 1.
-INSERT INTO atividades (id_atividade, id_usuario, tipo, distancia, duracao, data_atividade, descricao) VALUES
-    (1, 1, 'Corrida', 5.20, 30, '2026-02-01'::date, 'Corrida matinal na praça central'),
-    (2, 2, 'Ciclismo', 18.50, 55, '2026-02-01'::date, 'Pedalada na ciclovia à beira-mar'),
-    (3, 1, 'Caminhada', 3.10, 35, '2026-02-02'::date, 'Caminhada leve pós-expediente'),
-    (4, 3, 'Natação', 1.50, 45, '2026-02-03'::date, 'Treino de nado livre na piscina club'),
-    (5, 4, 'Musculação', 0.00, 60, '2026-02-03'::date, 'Treino A - Membros inferiores'),
-    (6, 5, 'Corrida', 8.00, 48, '2026-02-04'::date, 'Treino de tiro e ritmo acelerado'),
-    (7, 6, 'Corrida', 4.00, 28, '2026-02-05'::date, 'Primeira corrida utilizando a plataforma'),
-    (8, 7, 'Ciclismo', 25.00, 75, '2026-02-05'::date, 'Pedal longo de final de tarde'),
-    (9, 8, 'Caminhada', 5.00, 50, '2026-02-06'::date, 'Caminhada no parque da cidade'),
-    (10, 9, 'Futebol', 0.00, 90, '2026-02-06'::date, 'Partida semanal com amigos'),
-    (11, 10, 'Musculação', 0.00, 50, '2026-02-07'::date, 'Treino B - Superiores e core'),
-    (12, 2, 'Corrida', 6.50, 38, '2026-02-08'::date, 'Corrida de rua ritmada'),
-    (13, 11, 'Natação', 2.00, 50, '2026-02-08'::date, 'Treino de resistência e borboleta'),
-    (14, 12, 'Ciclismo', 12.30, 40, '2026-02-09'::date, 'Deslocamento urbano de bicicleta'),
-    (15, 13, 'Corrida', 10.00, 58, '2026-02-10'::date, 'Preparatório para prova de 10k'),
-    (16, 14, 'Caminhada', 4.20, 42, '2026-02-11'::date, 'Caminhada ao ar livre'),
-    (17, 15, 'Musculação', 0.00, 65, '2026-02-12'::date, 'Treino de hipertrofia'),
-    (18, 16, 'Corrida', 3.00, 20, '2026-02-14'::date, 'Corrida rápida de aquecimento'),
-    (19, 17, 'Ciclismo', 30.00, 90, '2026-02-15'::date, 'Pedal de longa distância na estrada'),
-    (20, 18, 'Natação', 1.20, 40, '2026-02-16'::date, 'Treino técnico de braçadas')
-ON CONFLICT (id_atividade) DO UPDATE SET
-    id_usuario = EXCLUDED.id_usuario, tipo = EXCLUDED.tipo, distancia = EXCLUDED.distancia, duracao = EXCLUDED.duracao, data_atividade = EXCLUDED.data_atividade, descricao = EXCLUDED.descricao;
+CREATE TEMP TABLE import_atividades (
+    id INTEGER,
+    usuario_id INTEGER,
+    tipo_atividade VARCHAR(100),
+    distancia_km NUMERIC(10, 2),
+    duracao_min INTEGER,
+    data_atividade DATE,
+    descricao TEXT
+) ON COMMIT DROP;
 
--- Ajusta as sequências das tabelas de interação após eventual carga de dados.
-SELECT setval(pg_get_serial_sequence('curtidas', 'id_curtida'), COALESCE((SELECT MAX(id_curtida) FROM curtidas), 1), false);
-SELECT setval(pg_get_serial_sequence('comentarios', 'id_comentario'), COALESCE((SELECT MAX(id_comentario) FROM comentarios), 1), false);
+-- Importação real dos arquivos CSV; não há registros de usuários ou atividades escritos manualmente.
+\copy import_usuarios (id, nome, email, tipo_usuario, data_cadastro) FROM 'usuarios.csv' WITH (FORMAT csv, HEADER true, ENCODING 'UTF8');
+\copy import_atividades (id, usuario_id, tipo_atividade, distancia_km, duracao_min, data_atividade, descricao) FROM 'Arquivoatividades.csv' WITH (FORMAT csv, HEADER true, ENCODING 'UTF8');
+
+-- Validações antes da carga definitiva.
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM import_usuarios GROUP BY id HAVING COUNT(*) > 1) THEN
+        RAISE EXCEPTION 'usuarios.csv possui IDs duplicados';
+    END IF;
+    IF EXISTS (SELECT 1 FROM import_usuarios GROUP BY email HAVING COUNT(*) > 1) THEN
+        RAISE EXCEPTION 'usuarios.csv possui e-mails duplicados';
+    END IF;
+    IF EXISTS (
+        SELECT 1 FROM import_atividades a
+        LEFT JOIN import_usuarios u ON u.id = a.usuario_id
+        WHERE u.id IS NULL
+    ) THEN
+        RAISE EXCEPTION 'Arquivoatividades.csv possui usuario_id sem usuário correspondente';
+    END IF;
+END $$;
+
+INSERT INTO usuarios (id_usuario, nome, email, tipo_usuario, data_cadastro)
+SELECT id, nome, email, tipo_usuario, data_cadastro::timestamp
+FROM import_usuarios
+ORDER BY id;
+
+INSERT INTO atividades (
+    id_atividade, id_usuario, tipo, distancia, duracao, data_atividade, descricao
+)
+SELECT id, usuario_id, tipo_atividade, distancia_km, duracao_min,
+       data_atividade, descricao
+FROM import_atividades
+ORDER BY id;
+
+-- Garante que os próximos IDs automáticos não colidam com os dados importados.
+SELECT setval(
+    pg_get_serial_sequence('curtidas', 'id_curtida'),
+    COALESCE((SELECT MAX(id_curtida) FROM curtidas), 1),
+    false
+);
+SELECT setval(
+    pg_get_serial_sequence('comentarios', 'id_comentario'),
+    COALESCE((SELECT MAX(id_comentario) FROM comentarios), 1),
+    false
+);
 
 COMMIT;
 
--- CONSULTAS DE CONFERÊNCIA
+-- Conferência da importação.
 SELECT COUNT(*) AS total_usuarios FROM usuarios;
-SELECT tipo_usuario, COUNT(*) AS quantidade FROM usuarios GROUP BY tipo_usuario ORDER BY tipo_usuario;
+SELECT tipo_usuario, COUNT(*) AS quantidade
+FROM usuarios
+GROUP BY tipo_usuario
+ORDER BY tipo_usuario;
 SELECT COUNT(*) AS total_atividades FROM atividades;
-SELECT a.id_atividade, u.nome AS usuario, a.tipo, a.distancia, a.duracao, a.data_atividade, a.descricao
-FROM atividades a INNER JOIN usuarios u ON u.id_usuario = a.id_usuario
+SELECT a.id_atividade, u.nome AS usuario, a.tipo, a.distancia,
+       a.duracao, a.data_atividade, a.descricao
+FROM atividades a
+JOIN usuarios u ON u.id_usuario = a.id_usuario
 ORDER BY a.id_atividade;
-
-ALTER TABLE atividades
-ALTER COLUMN data_atividade TYPE TIMESTAMP
-USING data_atividade::TIMESTAMP;
-SELECT * FROM usuarios ORDER BY id_usuario;
-
-SELECT id_usuario, nome, email, tipo_usuario, data_cadastro FROM usuarios WHERE tipo_usuario = 'funcionario'ORDER BY nome;
-
-SELECT id_usuario, nome, email, tipo_usuario, data_cadastro
-FROM usuarios
-WHERE tipo_usuario = 'cliente'
-ORDER BY nome;
-
-
-SELECT id_usuario, nome, email, tipo_usuario
-FROM usuarios
-WHERE nome ILIKE '%Carlos%'
-ORDER BY nome;
-
-SELECT *
-FROM atividades
-WHERE id_usuario = 1
-ORDER BY data_atividade DESC;
-
-
-SELECT id_atividade, data_atividade
-FROM atividades
-ORDER BY data_atividade DESC;
-
-
