@@ -1,5 +1,7 @@
 import { Pool } from 'pg';
 
+console.log('DB_PASSWORD carregada:', JSON.stringify(process.env.DB_PASSWORD));
+console.log('DB_USER carregada:', JSON.stringify(process.env.DB_USER));
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
