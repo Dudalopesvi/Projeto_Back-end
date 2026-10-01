@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoVision</title>
+</head>
+
+<body>
+    <header>
+        <img src="./assets/logo.png" alt="Avatar" id="fotoPefil" class="Avatar">
+
+
+        <div class="user-section oculta" id="userSection">
+            <span id="nomeUsuario"></span>
+            <button id="btnVerPerfil" class="btn-preto">Ver Perfil</button>
+        </div>
+
+
+        <h1 class="empresa">AutoVision</h1>
+        <button id="btnLogin" class="btn-preto">Entrar</button>
+
+
+
+    </header>
+    <main>
+        <div class="busca">
+            <input id="inputBusca" type="text" placeholder="Digite o modelo do carro">
+            <img src="assets/lupa.svg" alt="Buscar" class="icone-lupa">
+
+        </div>
+        <div class="vitrine" id="vitrine">
+
+        </div>
+    </main>
+    <footer>
+        <span>Autovision</span>
+        <div class="redes">
+            <img src="./assets/instagram.svg" alt="instagram">
+            <img src="./assets/tiktok.svg" alt="tiktok">
+            <img src="./assets/linkedin.svg" alt="linkedin">
+            <img src="./assets/youtube.svg" alt=" youtube">
+
+        </div>
+        <span>Copyright© 2026-2027</span>
+    </footer>
+    <!-- modal de login -->
+
+
+    <dialog class="overlay oculto" id="modalLogin">
+        <div class="modal">
+            <div class="modal-topo">
+                <h2>login</h2>
+                <button id="fecharModal" class="btn-fechar">X</button>
+            </div>
+            <input type="text" id="loginUsuario" placeholder="Digite seu nome">
+            <span id="erroUsuario " class="erro"></span>
+            <input type="password" id="loginSenha" placeholder="Digite sua senha">
+            <span id="erroSenha" class="erro"></span>
+            <span id="erroLogin" class="erro"></span>
+            <div class="modal-botoes">
+                <button id="btnCancelar" class="btn-outline">Cancelar</button>
+                <button id="btnConfirmarLogin" class="btn-preto">Cancelar</button>
+
+            </div>
+
+        </div>
+
+
+
+
+    </dialog>
+
+    <!-- menu lateral de perfil -->
+    <aside id="painelPerfil" class="painel-lateral oculto">
+        <div class="painel-topo">
+            <button id="fecharPainel" class="btn-fechar">X</button>
+
+        </div>
+        <p><span id="totalInteressados">0</span>Interessados</p>
+        <p><span id="totalAnuncios">0</span>Anúncios</p>
+        <button id="btnSeusAnuncios" class="btn-destaque">Seus Anúncios</button>
+
+        <form id="formCadastro" enctype="multipart/form-data" novalidate>
+            <div class="grupo-input">
+                <label for="campoTitulo">Título do Anùncio</label>
+                <input name="Título" id="campoTitulo" placeholder="ex: Honda Civix EXL 2020">
+                <span id="erroTítulo" class="msg-erro"></span>
+            </div>
+            <div class="grupo-input">
+                <label for="campoLocal">Localização</label>
+                <input type="text" name="local" id="campoLocal" placeholder="ex: Florianópolis-SC">
+                <span id="erroLocal" class="msg-erro"></span>
+            </div>
+            <div class="grupo-input">
+                <label for="campoPreco">Localização</label>
+                <input type="text" name="preco" id="campoPreco" placeholder="ex: R$ 7999.00" step="0.01">
+                <span id="erroPreco" class="msg-erro"></span>
+            </div>
+
+            <div class="grupo-input">
+                <label for="campoImagem"> Foto Veículo </label>
+                <input type="file " id="campoImagem" name="imagem" accept=".jpg, .jpeg,.png,.gif,.webp">
+                <span id="erroImagem" class="msg-erro"></span>
+            </div>
+            <button type="submit" class="btn-preto">Cadastrar</button>
+        </form>
+
+        <div class="listaAnunciosPerfil"></div>
+    </aside>
+
+    <!-- Modal de interesse(sem ter feito login) -->
+<dialog id="modalInteresse" class="overlay oculto">
+    <div class="modal">
+        <div class="modal-topo">
+            <h2>Tenho interesse</h2>
+            <button id="fechaModalInteresse" class="btn-fechar">X</button>
+        </div>
+        <input type="text"  id="InteresseNome" placeholder="Seu Nome">
+        <input type="text"  id="InteresseContato" placeholder="Telefone ou e-mail">
+        <span id="erroInteresse" class="erro"></span>
+        <div class="modal-botoes">
+            <button id="cancelarInteresse" class="btn-outline">Cancelar</button>
+            <button id="btnConfirmarInteresse" class="btn-preto">Confirmar</button>
+
+        </div>
+    </div>
+
+</dialog>
+
+</body>
+
+</html>
